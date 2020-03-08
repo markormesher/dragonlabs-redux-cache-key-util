@@ -1,9 +1,9 @@
 {
-  "name": "redux-cache-key-util",
+  "name": "@dragonlabs/redux-cache-key-util",
   "version": "0.0.0",
   "main": "index.js",
   "license": "Apache-2.0",
-  "repository": "https://github.com/markormesher/redux-cache-key-util",
+  "repository": "https://github.com/markormesher/dragonlabs-redux-cache-key-util",
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
     "build-test": "tsc -p ./tsconfig.test.json",
