@@ -1,0 +1,26 @@
+{
+	"all": true,
+	"watermarks": {
+		"lines": [70, 90],
+		"functions": [70, 90],
+		"branches": [70, 90],
+		"statements": [70, 90]
+	},
+	"exclude": [
+		"// don't check coverage of type declarations",
+		"**/*.d.ts",
+
+		"// don't check coverage of test init scripts or the tests themselves",
+		"**/*.tests.*",
+
+		"// don't check coverage of test outputs",
+		".nyc_output/",
+		"coverage/"
+	],
+	"reporter": [
+		"html",
+		"lcov",
+		"text",
+		"text-summary"
+	]
+}
