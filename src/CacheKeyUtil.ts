@@ -10,21 +10,35 @@ interface ICacheKeyUtilAction {
 }
 
 enum CacheKeyUtilActions {
-  TOUCH = "CacheKeyUtilActions.TOUCH",
+  UPDATE = "CacheKeyUtilActions.UPDATE",
+  INVALIDATE = "CacheKeyUtilActions.INVALIDATE",
 }
+
+const MIN_VALID_KEY = 0;
+const INVALID_KEY = MIN_VALID_KEY - 1;
 
 class CacheKeyUtil<State> {
   public static STATE_KEY = "__cache";
   public static store?: Store;
+  public static maxTimestampGiven = 0;
 
   public static setStore(store: Store): void {
     CacheKeyUtil.store = store;
   }
 
-  public static touchKey(key: string): ICacheKeyUtilAction {
+  public static updateKey(key: string): ICacheKeyUtilAction {
+    CacheKeyUtil.checkStore();
+
+    return {
+      type: CacheKeyUtilActions.UPDATE,
+      key,
+    };
+  }
+
+  public static invalidateKey(key: string): ICacheKeyUtilAction {
     CacheKeyUtil.checkStore();
     return {
-      type: CacheKeyUtilActions.TOUCH,
+      type: CacheKeyUtilActions.INVALIDATE,
       key,
     };
   }
@@ -32,38 +46,54 @@ class CacheKeyUtil<State> {
   public static getKeyTime(key: string): number {
     CacheKeyUtil.checkStore();
     const state = CacheKeyUtil.store.getState()[this.STATE_KEY] as ICacheKeyUtilState;
-    return state[key] || 0;
+    return state[key] || INVALID_KEY;
   }
 
-  public static keyIsValid(key: string, dependencies: string[]): boolean {
-    CacheKeyUtil.checkStore();
-    const keyTime = CacheKeyUtil.getKeyTime(key);
-    if (keyTime === 0) {
-      return false;
+  public static getMinKeyTime(keys: string[]): number {
+    if (!keys || keys.length === 0) {
+      return INVALID_KEY;
     }
-    let valid = true;
-    dependencies.forEach((d) => {
-      if (CacheKeyUtil.getKeyTime(d) >= keyTime) {
-        valid = false;
-      }
-    });
-    return valid;
+
+    const keyTimes = keys.map((key) => this.getKeyTime(key));
+    return Math.min(...keyTimes);
+  }
+
+  public static getMaxKeyTime(keys: string[]): number {
+    if (!keys || keys.length === 0) {
+      return INVALID_KEY;
+    }
+
+    const keyTimes = keys.map((key) => this.getKeyTime(key));
+    return Math.max(...keyTimes);
+  }
+
+  public static keyIsValid(key: string, dependencies: string[] = []): boolean {
+    CacheKeyUtil.checkStore();
+
+    const keyTime = this.getKeyTime(key);
+    const maxDependencyTime = this.getMaxKeyTime(dependencies);
+
+    return keyTime >= MIN_VALID_KEY && keyTime > maxDependencyTime;
   }
 
   public static reducer(state: ICacheKeyUtilState = {}, action: ICacheKeyUtilAction): ICacheKeyUtilState {
     switch (action.type) {
-      case CacheKeyUtilActions.TOUCH:
+      case CacheKeyUtilActions.UPDATE:
         return {
           ...state,
           [action.key]: CacheKeyUtil.getTimestamp(),
+        };
+
+      case CacheKeyUtilActions.INVALIDATE:
+        return {
+          ...state,
+          [action.key]: INVALID_KEY,
         };
 
       default:
         return state;
     }
   }
-
-  private static maxTimestampGiven = 0;
 
   private static checkStore(): void {
     if (!CacheKeyUtil.store) {

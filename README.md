@@ -7,8 +7,8 @@ The set of operations supported is very simple:
 * A cache key can be updated, indicating that the value cached for that key has been upated.
 * A cache key can be invalidated, indicating that the value cached for that key is no longer valid.
 * The validity of a cache key can be checked. A key is considered valid if both of the following conditions are true:
-  * The key has been touched at some time `t`.
-  * No dependent key has been touched at any point between `t` and now.
+  * The key has been updated at some time `t`.
+  * No dependent key has been updated at any point since `t`.
 
 Note that the update and invalidate methods do not update this util's state directly; rather, they produce action that should be dispatched just like any other Redux action. This makes the util easy to use alongside any other part of your code that interacts with Redux.
 
@@ -55,6 +55,12 @@ Use the `updateKey(key: string)` and `keyIsValid(key: string, dependencies: stri
       dispatch({ type: "full_article_loaded", is: articleId, article: fullArticle });
       dispatch(CacheKeyUtil.updateKey(cacheKey));
     }
+
+## Internal Use of Timestamps
+
+When a key is updated, a timestamp is stored for that key. Validity of a key is checked by comparing its timestamp to the timestamps of any dependent keys.
+
+Timestamps are issued interally as strictly increasing non-repeating integers that may or may not reflect the actual wall-clock timestamp. The minimum valid timestamp is 0; any value below 0 indicates an invalid key.
 
 ## Why "dragonlabs"?
 

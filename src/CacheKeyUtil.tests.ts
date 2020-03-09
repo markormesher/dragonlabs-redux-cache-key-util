@@ -27,18 +27,18 @@ describe(__filename, () => {
     CacheKeyUtil.setStore(undefined);
   });
 
-  describe("touchKey()", () => {
+  describe("updateKey()", () => {
     it("should throw an exception when the store is not set", () => {
       CacheKeyUtil.setStore(undefined);
-      expect(() => CacheKeyUtil.touchKey("key")).to.throw();
+      expect(() => CacheKeyUtil.updateKey("key")).to.throw();
     });
 
     it("should generate an action with the correct type", () => {
-      CacheKeyUtil.touchKey("test-key").type.should.equal(CacheKeyUtilActions.TOUCH);
+      CacheKeyUtil.updateKey("test-key").type.should.equal(CacheKeyUtilActions.UPDATE);
     });
 
     it("should generate an action with the provided key", () => {
-      CacheKeyUtil.touchKey("test-key").key.should.equal("test-key");
+      CacheKeyUtil.updateKey("test-key").key.should.equal("test-key");
     });
   });
 
@@ -48,13 +48,13 @@ describe(__filename, () => {
       expect(() => CacheKeyUtil.getKeyTime("key")).to.throw();
     });
 
-    it("should return zero for keys that have not been set", () => {
-      CacheKeyUtil.getKeyTime("test-key").should.equal(0);
+    it("should return -1 for keys that have not been set", () => {
+      CacheKeyUtil.getKeyTime("test-key").should.equal(-1);
     });
 
     it("should return the key time for keys that have been set", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key"));
       resetStore(state);
       CacheKeyUtil.getKeyTime("test-key").should.equal(state["test-key"]);
     });
@@ -76,39 +76,39 @@ describe(__filename, () => {
 
     it("should return true for keys with no dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key"));
       resetStore(state);
       CacheKeyUtil.keyIsValid("test-key", []).should.equal(true);
     });
 
     it("should return true for keys with unset dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
       resetStore(state);
       CacheKeyUtil.keyIsValid("test-key1", ["test-key2"]).should.equal(true);
     });
 
     it("should return true for keys set after all dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key2"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
       resetStore(state);
       CacheKeyUtil.keyIsValid("test-key1", ["test-key2"]).should.equal(true);
     });
 
     it("should return false for keys set before all dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key1"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
       resetStore(state);
       CacheKeyUtil.keyIsValid("test-key1", ["test-key2"]).should.equal(false);
     });
 
     it("should return false for keys set before some dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key3"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key1"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key3"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
       resetStore(state);
       CacheKeyUtil.keyIsValid("test-key1", ["test-key2", "test-key3"]).should.equal(false);
     });
@@ -121,23 +121,23 @@ describe(__filename, () => {
 
     it("should not mutate the state when an unrecognised action is passed", () => {
       const state = {};
-      const action: ICacheKeyUtilAction = { type: CacheKeyUtilActions.TOUCH, key: "" };
+      const action: ICacheKeyUtilAction = { type: CacheKeyUtilActions.UPDATE, key: "" };
       Object.defineProperty(action, "type", { writable: true, value: "random-action" });
       CacheKeyUtil.reducer(state, action).should.equal(state);
     });
 
-    it("should add the key when the TOUCH action is passed", () => {
+    it("should add the key when the UPDATE action is passed", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key"));
       state.should.have.keys("test-key");
       state["test-key"].should.be.greaterThan(0);
     });
 
     it("should issue increasing key times", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key1"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key2"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.touchKey("test-key3"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key3"));
       state["test-key1"].should.be.lessThan(state["test-key2"]);
       state["test-key2"].should.be.lessThan(state["test-key3"]);
     });
