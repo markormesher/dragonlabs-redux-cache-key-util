@@ -30,7 +30,7 @@ describe(__filename, () => {
   describe("updateKey()", () => {
     it("should throw an exception when the store is not set", () => {
       CacheKeyUtil.setStore(undefined);
-      expect(() => CacheKeyUtil.updateKey("key")).to.throw();
+      expect(() => CacheKeyUtil.updateKey("test-key")).to.throw();
     });
 
     it("should generate an action with the correct type", () => {
@@ -42,14 +42,37 @@ describe(__filename, () => {
     });
   });
 
+  describe("invalidateKey()", () => {
+    it("should throw an exception when the store is not set", () => {
+      CacheKeyUtil.setStore(undefined);
+      expect(() => CacheKeyUtil.invalidateKey("test-key")).to.throw();
+    });
+
+    it("should generate an action with the correct type", () => {
+      CacheKeyUtil.invalidateKey("test-key").type.should.equal(CacheKeyUtilActions.INVALIDATE);
+    });
+
+    it("should generate an action with the provided key", () => {
+      CacheKeyUtil.invalidateKey("test-key").key.should.equal("test-key");
+    });
+  });
+
   describe("getKeyTime()", () => {
     it("should throw an exception when the store is not set", () => {
       CacheKeyUtil.setStore(undefined);
-      expect(() => CacheKeyUtil.getKeyTime("key")).to.throw();
+      expect(() => CacheKeyUtil.getKeyTime("test-key")).to.throw();
     });
 
-    it("should return -1 for keys that have not been set", () => {
-      CacheKeyUtil.getKeyTime("test-key").should.equal(-1);
+    it("should return an invalid timestamp for keys that have not been set", () => {
+      CacheKeyUtil.getKeyTime("test-key").should.be.lessThan(CacheKeyUtil.MIN_VALID_KEY);
+    });
+
+    it("should return an invalid timestamp for keys that have been reset", () => {
+      let state: ICacheKeyUtilState = {};
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.invalidateKey("test-key"));
+      resetStore(state);
+      CacheKeyUtil.getKeyTime("test-key").should.be.lessThan(CacheKeyUtil.MIN_VALID_KEY);
     });
 
     it("should return the key time for keys that have been set", () => {
@@ -60,57 +83,90 @@ describe(__filename, () => {
     });
   });
 
+  describe("getMinKeyTime()", () => {
+    it("should throw an exception when the store is not set", () => {
+      CacheKeyUtil.setStore(undefined);
+      expect(() => CacheKeyUtil.getMinKeyTime([])).to.throw();
+    });
+
+    it("should return an invalid timestamp when called with no keys", () => {
+      CacheKeyUtil.getMinKeyTime([]).should.be.lessThan(CacheKeyUtil.MIN_VALID_KEY);
+    });
+
+    it("should return an invalid timestamp for keys that have not been set", () => {
+      CacheKeyUtil.getMinKeyTime(["test-key"]).should.be.lessThan(CacheKeyUtil.MIN_VALID_KEY);
+    });
+
+    it("should return an invalid timestamp for a mix of set and unset keys", () => {
+      let state: ICacheKeyUtilState = {};
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
+      resetStore(state);
+      CacheKeyUtil.getMinKeyTime(["test-key-1", "test-key-2"]).should.be.lessThan(CacheKeyUtil.MIN_VALID_KEY);
+    });
+
+    it("should return the lowest timestamp for a set of valid keys", () => {
+      let state: ICacheKeyUtilState = {};
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-2"));
+      resetStore(state);
+      CacheKeyUtil.getMinKeyTime(["test-key-1", "test-key-2"]).should.equal(
+        Math.min(state["test-key-1"], state["test-key-2"]),
+      );
+    });
+  });
+
   describe("keyIsValid()", () => {
     it("should throw an exception when the store is not set", () => {
       CacheKeyUtil.setStore(undefined);
-      expect(() => CacheKeyUtil.keyIsValid("key", [])).to.throw();
+      expect(() => CacheKeyUtil.keyIsValid("test-key")).to.throw();
     });
 
     it("should return false for unset keys with no dependencies", () => {
+      CacheKeyUtil.keyIsValid("test-key").should.equal(false);
       CacheKeyUtil.keyIsValid("test-key", []).should.equal(false);
     });
 
     it("should return false for unset keys with dependencies", () => {
-      CacheKeyUtil.keyIsValid("test-key1", ["test-key-2"]).should.equal(false);
+      CacheKeyUtil.keyIsValid("test-key-1", ["test-key-2"]).should.equal(false);
     });
 
-    it("should return true for keys with no dependencies", () => {
+    it("should return true for valid keys with no dependencies", () => {
       let state: ICacheKeyUtilState = {};
       state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key"));
       resetStore(state);
-      CacheKeyUtil.keyIsValid("test-key", []).should.equal(true);
+      CacheKeyUtil.keyIsValid("test-key").should.equal(true);
     });
 
-    it("should return true for keys with unset dependencies", () => {
+    it("should return true for valid keys with unset dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
       resetStore(state);
-      CacheKeyUtil.keyIsValid("test-key1", ["test-key2"]).should.equal(true);
+      CacheKeyUtil.keyIsValid("test-key-1", ["test-key-2"]).should.equal(true);
     });
 
     it("should return true for keys set after all dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
       resetStore(state);
-      CacheKeyUtil.keyIsValid("test-key1", ["test-key2"]).should.equal(true);
+      CacheKeyUtil.keyIsValid("test-key-1", ["test-key-2"]).should.equal(true);
     });
 
     it("should return false for keys set before all dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-2"));
       resetStore(state);
-      CacheKeyUtil.keyIsValid("test-key1", ["test-key2"]).should.equal(false);
+      CacheKeyUtil.keyIsValid("test-key-1", ["test-key-2"]).should.equal(false);
     });
 
     it("should return false for keys set before some dependencies", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key3"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-3"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-2"));
       resetStore(state);
-      CacheKeyUtil.keyIsValid("test-key1", ["test-key2", "test-key3"]).should.equal(false);
+      CacheKeyUtil.keyIsValid("test-key-1", ["test-key-2", "test-key-3"]).should.equal(false);
     });
   });
 
@@ -135,11 +191,11 @@ describe(__filename, () => {
 
     it("should issue increasing key times", () => {
       let state: ICacheKeyUtilState = {};
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key1"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key2"));
-      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key3"));
-      state["test-key1"].should.be.lessThan(state["test-key2"]);
-      state["test-key2"].should.be.lessThan(state["test-key3"]);
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-1"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-2"));
+      state = CacheKeyUtil.reducer(state, CacheKeyUtil.updateKey("test-key-3"));
+      state["test-key-1"].should.be.lessThan(state["test-key-2"]);
+      state["test-key-2"].should.be.lessThan(state["test-key-3"]);
     });
   });
 });

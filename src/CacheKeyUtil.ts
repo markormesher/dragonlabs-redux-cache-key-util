@@ -14,13 +14,11 @@ enum CacheKeyUtilActions {
   INVALIDATE = "CacheKeyUtilActions.INVALIDATE",
 }
 
-const MIN_VALID_KEY = 0;
-const INVALID_KEY = MIN_VALID_KEY - 1;
-
 class CacheKeyUtil<State> {
   public static STATE_KEY = "__cache";
   public static store?: Store;
   public static maxTimestampGiven = 0;
+  public static MIN_VALID_KEY = 0;
 
   public static setStore(store: Store): void {
     CacheKeyUtil.store = store;
@@ -46,12 +44,13 @@ class CacheKeyUtil<State> {
   public static getKeyTime(key: string): number {
     CacheKeyUtil.checkStore();
     const state = CacheKeyUtil.store.getState()[this.STATE_KEY] as ICacheKeyUtilState;
-    return state[key] || INVALID_KEY;
+    return state[key] || this.MIN_VALID_KEY - 1;
   }
 
   public static getMinKeyTime(keys: string[]): number {
+    CacheKeyUtil.checkStore();
     if (!keys || keys.length === 0) {
-      return INVALID_KEY;
+      return this.MIN_VALID_KEY - 1;
     }
 
     const keyTimes = keys.map((key) => this.getKeyTime(key));
@@ -60,7 +59,7 @@ class CacheKeyUtil<State> {
 
   public static getMaxKeyTime(keys: string[]): number {
     if (!keys || keys.length === 0) {
-      return INVALID_KEY;
+      return this.MIN_VALID_KEY - 1;
     }
 
     const keyTimes = keys.map((key) => this.getKeyTime(key));
@@ -73,7 +72,7 @@ class CacheKeyUtil<State> {
     const keyTime = this.getKeyTime(key);
     const maxDependencyTime = this.getMaxKeyTime(dependencies);
 
-    return keyTime >= MIN_VALID_KEY && keyTime > maxDependencyTime;
+    return keyTime >= this.MIN_VALID_KEY && keyTime > maxDependencyTime;
   }
 
   public static reducer(state: ICacheKeyUtilState = {}, action: ICacheKeyUtilAction): ICacheKeyUtilState {
@@ -87,7 +86,7 @@ class CacheKeyUtil<State> {
       case CacheKeyUtilActions.INVALIDATE:
         return {
           ...state,
-          [action.key]: INVALID_KEY,
+          [action.key]: this.MIN_VALID_KEY - 1,
         };
 
       default:
