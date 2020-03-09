@@ -1,3 +1,4 @@
+![CircleCI](https://img.shields.io/circleci/build/github/markormesher/dragonlabs-redux-cache-key-util)
 ![npm](https://img.shields.io/npm/v/@dragonlabs/redux-cache-key-util)
 
 # @dragonlabs/redux-cache-key-util
