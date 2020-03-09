@@ -1,3 +1,5 @@
+![npm](https://img.shields.io/npm/v/@dragonlabs/redux-cache-key-util)
+
 # @dragonlabs/redux-cache-key-util
 
 This util provides a very lightweight way to check the validity of inter-dependent cache entries, such that the validity of a cache entry is dependent on whether other entries have been updated since it was set. It does *not* currently support TTL-based validity checking.
