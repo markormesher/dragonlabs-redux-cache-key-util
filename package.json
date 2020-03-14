@@ -2,6 +2,7 @@
   "name": "@dragonlabs/redux-cache-key-util",
   "version": "0.0.2",
   "main": "index.js",
+  "files": ["build/**/*"],
   "license": "Apache-2.0",
   "repository": "https://github.com/markormesher/dragonlabs-redux-cache-key-util",
   "scripts": {
