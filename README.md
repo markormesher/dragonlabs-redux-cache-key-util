@@ -20,11 +20,11 @@ Note that the update and invalidate methods do not update this util's state dire
 
 Install with yarn:
 
-    yarn add -D @dragonlabs/redux-cache-key-util
+    yarn add @dragonlabs/redux-cache-key-util
 
 Or install with NPM:
 
-    npm install --save-dev @dragonlabs/redux-cache-key-util
+    npm install @dragonlabs/redux-cache-key-util
 
 Pass your Redux store to the `setStore(store: Store)` method in the initialisation steps of your app:
 
