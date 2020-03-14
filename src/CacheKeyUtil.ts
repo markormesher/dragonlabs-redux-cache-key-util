@@ -108,4 +108,4 @@ class CacheKeyUtil<State> {
   }
 }
 
-export { ICacheKeyUtilState, ICacheKeyUtilAction, CacheKeyUtilActions, CacheKeyUtil };
+export { CacheKeyUtil };
