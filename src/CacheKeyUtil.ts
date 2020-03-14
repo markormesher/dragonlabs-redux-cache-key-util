@@ -43,36 +43,36 @@ class CacheKeyUtil<State> {
 
   public static getKeyTime(key: string): number {
     CacheKeyUtil.checkStore();
-    const state = CacheKeyUtil.store.getState()[this.STATE_KEY] as ICacheKeyUtilState;
-    return state[key] || this.MIN_VALID_KEY - 1;
+    const state = CacheKeyUtil.store.getState()[CacheKeyUtil.STATE_KEY] as ICacheKeyUtilState;
+    return state[key] || CacheKeyUtil.MIN_VALID_KEY - 1;
   }
 
   public static getMinKeyTime(keys: string[]): number {
     CacheKeyUtil.checkStore();
     if (!keys || keys.length === 0) {
-      return this.MIN_VALID_KEY - 1;
+      return CacheKeyUtil.MIN_VALID_KEY - 1;
     }
 
-    const keyTimes = keys.map((key) => this.getKeyTime(key));
+    const keyTimes = keys.map((key) => CacheKeyUtil.getKeyTime(key));
     return Math.min(...keyTimes);
   }
 
   public static getMaxKeyTime(keys: string[]): number {
     if (!keys || keys.length === 0) {
-      return this.MIN_VALID_KEY - 1;
+      return CacheKeyUtil.MIN_VALID_KEY - 1;
     }
 
-    const keyTimes = keys.map((key) => this.getKeyTime(key));
+    const keyTimes = keys.map((key) => CacheKeyUtil.getKeyTime(key));
     return Math.max(...keyTimes);
   }
 
   public static keyIsValid(key: string, dependencies: string[] = []): boolean {
     CacheKeyUtil.checkStore();
 
-    const keyTime = this.getKeyTime(key);
-    const maxDependencyTime = this.getMaxKeyTime(dependencies);
+    const keyTime = CacheKeyUtil.getKeyTime(key);
+    const maxDependencyTime = CacheKeyUtil.getMaxKeyTime(dependencies);
 
-    return keyTime >= this.MIN_VALID_KEY && keyTime > maxDependencyTime;
+    return keyTime >= CacheKeyUtil.MIN_VALID_KEY && keyTime > maxDependencyTime;
   }
 
   public static reducer(state: ICacheKeyUtilState = {}, action: ICacheKeyUtilAction): ICacheKeyUtilState {
@@ -86,7 +86,7 @@ class CacheKeyUtil<State> {
       case CacheKeyUtilActions.INVALIDATE:
         return {
           ...state,
-          [action.key]: this.MIN_VALID_KEY - 1,
+          [action.key]: CacheKeyUtil.MIN_VALID_KEY - 1,
         };
 
       default:
@@ -102,8 +102,8 @@ class CacheKeyUtil<State> {
 
   private static getTimestamp(): number {
     const raw = new Date().getTime();
-    const output = raw > this.maxTimestampGiven ? raw : this.maxTimestampGiven + 1;
-    this.maxTimestampGiven = output;
+    const output = raw > CacheKeyUtil.maxTimestampGiven ? raw : CacheKeyUtil.maxTimestampGiven + 1;
+    CacheKeyUtil.maxTimestampGiven = output;
     return output;
   }
 }
