@@ -1,18 +1,18 @@
 {
   "name": "@dragonlabs/redux-cache-key-util",
   "version": "0.0.9",
-  "main": "build/index.js",
+  "main": "dist/index.js",
   "files": [
-    "build/**/*"
+    "dist/**/*"
   ],
   "license": "Apache-2.0",
   "repository": "https://github.com/markormesher/dragonlabs-redux-cache-key-util",
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
     "build-test": "tsc -p ./tsconfig.test.json",
-    "clean": "rimraf ./build ./coverage ./.nyc_output",
+    "clean": "rimraf ./dist ./coverage ./.nyc_output",
     "lint": "eslint --ext ts ./src",
-    "run-test": "nyc mocha \"./build/**/*.js\"",
+    "run-test": "nyc mocha \"./dist/**/*.js\"",
     "test": "run-s clean build-test run-test"
   },
   "dependencies": {
