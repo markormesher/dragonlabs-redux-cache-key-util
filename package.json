@@ -31,6 +31,7 @@
     "nyc": "^15.0.0",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "yarn-deduplicate": "^2.0.0"
   }
 }
