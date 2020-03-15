@@ -1,5 +1,5 @@
 # Generated code
-build/
+dist/
 node_modules/
 
 # Test outputs
