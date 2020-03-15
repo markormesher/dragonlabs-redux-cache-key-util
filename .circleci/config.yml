@@ -43,7 +43,7 @@ jobs:
           at: .
       - run:
           name: Run lockfile linter
-          command: yarn check-lockfile -p yarn.lock
+          command: yarn lockfile-lint -p yarn.lock
       - run:
           name: Check for duplicate dependencies
           command: yarn yarn-deduplicate -f -l
