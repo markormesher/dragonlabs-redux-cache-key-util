@@ -1,5 +1,6 @@
 # Generated code
 dist/
+build/
 node_modules/
 
 # Test outputs
