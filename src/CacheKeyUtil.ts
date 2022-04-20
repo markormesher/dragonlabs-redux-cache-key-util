@@ -14,7 +14,7 @@ enum CacheKeyUtilActions {
   INVALIDATE = "CacheKeyUtilActions.INVALIDATE",
 }
 
-class CacheKeyUtil<State> {
+class CacheKeyUtil {
   public static STATE_KEY = "__cache";
   public static store?: Store;
   public static maxTimestampGiven = 0;
