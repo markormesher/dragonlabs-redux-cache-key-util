@@ -1,6 +1,6 @@
 {
   "name": "@dragonlabs/redux-cache-key-util",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "main": "dist/index.js",
   "files": [
     "dist/**/*"
