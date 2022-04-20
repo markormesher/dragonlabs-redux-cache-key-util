@@ -19,19 +19,26 @@
     "redux": ">= 4.0.0"
   },
   "devDependencies": {
-    "@dragonlabs/eslint-config": "^0.0.4",
+    "@dragonlabs/eslint-config": "^0.0.13",
     "@types/chai": "^4.2.10",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.9.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
     "chai": "^4.2.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-react": "^7.24.0",
+    "install-peerdeps": "^3.0.3",
     "lockfile-lint": "^4.0.0",
     "mocha": "^7.1.1",
     "npm-run-all": "^4.1.5",
     "nyc": "^15.0.0",
-    "prettier": "^1.19.1",
+    "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "^3.8.3",
+    "typescript": "<4.5.0",
     "yarn-deduplicate": "^2.0.0"
   }
 }
